@@ -127,10 +127,10 @@
 (require-package 'org-download)
 (add-hook 'dired-mode-hook 'org-download-enable)
 (add-hook 'org-mode-hook 'org-download-enable)
-(with-eval-after-load 'org-mode
-  (setq-default org-download-method 'directory)
-  (setq-default org-download-screenshot-method "xclip") ;;未完成
-  (setq-default org-download-image-dir (concat qrq/org-basic-directory "pictures/")))
+(setq-default org-download-method 'directory)
+(setq-default org-download-screenshot-method "xclip") ;;未完成
+(setq-default org-download-image-dir (concat qrq/org-basic-directory "pictures/"))
+(setq-default org-download-heading-lvl nil)
 ;;=======================================org-download configuration end===============
 
 ;;==========================================lsp configuration============================

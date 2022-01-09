@@ -19,7 +19,7 @@
 
 ;; proxy, be aware that aira2 proxy only support http proxy.
 (setq eaf-proxy-type "http")
-(setq eaf-proxy-host "127.0.0.1")
+(setq eaf-proxy-host (car (split-string (shell-command-to-string "echo $hostip") "\n")))
 (setq eaf-proxy-port "7890")
 (require 'eaf-evil)
 
