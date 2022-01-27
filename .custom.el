@@ -399,6 +399,43 @@
 ;;         evil-backward-char))
 ;;========================================keyfreq configuration end========================================
 
+;;========================================qt-config==========================================================
+;; (require-package 'qt-pro-mode)
+;; (with-eval-after-load 'cc-mode
+;;   (setq qt-base-directory "/mnt/d/Qt/QT5.12.0/5.12.0/")
+;;   (setq qt-source-directory (expand-file-name "Src"
+;;                                               qt-base-directory)
+;;         qt-include-directory (expand-file-name "mingw73_64/include/"
+;;                                                qt-base-directory))
+;;   (add-to-list 'auto-mode-alist (cons qt-source-directory 'c++-mode))
+;;   (add-to-list 'cc-search-directories qt-source-directory)
+
+;;   (add-to-list 'auto-mode-alist (cons qt-include-directory 'c++-mode))
+;;   (dolist (file (directory-files qt-include-directory))
+;;     (let ((path (expand-file-name file qt-include-directory)))
+;;       (when (and (file-directory-p path)
+;;                  (not (or (equal file ".") (equal file ".."))))
+;;         (progn
+;;           (add-to-list 'cc-search-directories path)))))
+;; )
+;; (setenv "GTAGSLIBPATH" (concat "/usr/include"
+;;                                ":"
+;;                                "/usr/src/linux/include"
+;;                                ":"
+;;                                (file-truename "/mnt/d/Qt/QT5.12.0/5.12.0/mingw73_64/include")
+;;                                ":"
+;;                                (file-truename "/mnt/d/Qt/QT5.12.0/5.12.0/mingw73_64/include/Qwt")
+;;                                ":"
+;;                                (file-truename "/mnt/d/opencv/opencvbulid3.40/include")
+;;                                ":"
+;;                                (file-truename "/mnt/d/programs/ImageRecongnition/prj/Applexifu/Applexifu/")
+;;                                ":"
+;;                                (file-truename "/mnt/d/programs/ImageRecongnition/prj/sdk/MVS/Development/Includes")))
+;; (setenv "MAKEOBJDIRPREFIX" (file-truename "~/obj/"))
+;; (setq company-backends '((company-dabbrev-code company-gtags)))
+;;==========================================================================================================
+
+
 (setq my-term-program "/bin/zsh")
 (exec-path-from-shell-initialize)
 
