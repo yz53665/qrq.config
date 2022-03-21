@@ -1,6 +1,6 @@
 (add-to-list 'melpa-include-packages 'org-download)
 (add-to-list 'melpa-include-packages 'dap-mode)
-(add-to-list 'load-path "~/capture/qrq.config")
+(add-to-list 'load-path "/mnt/d/myfile/capture/qrq.config")
 (cond
  ((eq system-type 'gnu/linux)
   (require 'qrq-linux))
@@ -11,10 +11,7 @@
   (setq tags-revert-without-query t)
 ;;   ;; NO warning when loading large tag files
   (setq large-file-warning-threshold nil)
-  (add-hook 'prog-mode-hook
-    (lambda ()
-      (add-hook 'after-save-hook
-                'counsel-etags-virtual-update-tags 'append 'local)))
+
 ;;============================org-mode configuration========================
 (setq-default org-directory qrq/org-basic-directory)
 (setq-default org-agenda-files (list org-directory))
@@ -103,14 +100,32 @@
            (file+headline qrq/org-gong-path "Week Report")
            "** %^u %^{标题} :WEEKREPORT: \n   -第%^{次数}汇报\n   %?"
            :empty-lines-after 1)
-          ;; ("r" "experiment record" entry
-          ;;  (file+headline qrq/org-gong-path "自整定烤箱实验记录")
-          ;;  "**** %^U
-          ;;  %^{MachineNum}p %^{Mode}p %^{EnvTemp}p %^{InitTemp}p
-          ;;  %^{TargetTemp}p %^{Kp}p %^{Ki}p %^{Kd}p
-          ;;  %^{KiLimit}p %^{Overshoot}p %^{Fallack}p %^{RisingTime}p
-          ;;  %^{StableTime}p\n\n" :jump-to-captured t :empty-lines-after 1)
           ))
+
+;; org publish
+(setq qrq/org-blog-directory (concat qrq/org-basic-directory "blog"))
+(setq qrq/org-publish-directory (concat qrq/org-basic-directory "JekyllBolg"))
+(setq org-publish-project-alist
+      '(
+        ("org-to-blog-html"
+         :base-directory "/mnt/d/myfile/capture/blog/"
+         :base-extension "org"
+         :publishing-directory "/mnt/d/myfile/capture/JekyllBlog"
+         :recursive t
+         :publishing-function org-html-publish-to-html
+         :headline-levels 4
+         :html-extension "html"
+         :htmlized-source t
+         :body-only t)
+        ("other-static-file"
+         :base-directory "/mnt/d/myfile/capture/blog/"
+         :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|md"
+         :publishing-directory "/mnt/d/myfile/capture/JekyllBlog"
+         :recursive t
+         :publishing-function org-publish-attachment)
+        ("org-blog"
+         :components ("org-to-blog-html" "other-static-file"))
+        ))
 ;;=============================================org configuration end==========================================
 ;;=============================zotxt=====================================
 (require-package 'zotxt)
@@ -165,23 +180,32 @@
   (setq-default lsp-signature-auto-activate nil)
   )
 
-(with-eval-after-load 'go-mode
+(evil-define-key '(normal visual) 'lsp
+  (kbd "C-]") 'xref-find-definitions
+  (kbd "C-'") 'xref-find-references)
 
-  (evil-define-key '(normal visual) go-mode-map (kbd "C-]") 'xref-find-definitions)
-  (evil-define-key '(normal visual) go-mode-map (kbd "C-'") 'xref-find-references)
-  )
+(evil-define-key '(normal visual) 'c-mode
+  (kbd "C-]") 'counsel-etags-find-tag-at-point
+  (kbd "C-'") 'counsel-etags-find-tag-at-point)
 
-
-(add-hook 'c-mode-hook 'lsp-deferred)
+;; (add-hook 'c++-mode-hook #'lsp-deferred)
 
 ;;=======================================c-mode configuration==========================
+(add-hook 'c-mode-hook #'lsp-deferred)
 (with-eval-after-load 'c-mode
 
-  (evil-define-key '(normal visual) go-mode-map (kbd "C-]") 'xref-find-definitions)
-  (evil-define-key '(normal visual) go-mode-map (kbd "C-'") 'xref-find-references)
+  (evil-define-key '(normal visual) c-mode-map
+    (kbd "C-]") 'xref-find-definitions
+    (kbd "C-'") 'xref-find-references)
   )
 
 ;;=======================================c-mode configuration end======================
+;;======================================c++-mode configuration=========================
+(with-eval-after-load 'c++-mode
+  (setq company-backends '((company-dabbrev-code company-gtags company-ctags)))
+  (setq auto-save-interval 3000)
+  )
+;;======================================c++-mode configuration end=====================
 ;;=======================================lsp configuration end============================
 
 (setq lazyflymake-flymake-mode-on t)
@@ -372,6 +396,14 @@
   "
 ")
 
+;;==============================w3m========================================
+(setq hostip (concat "http_proxy=http://" hostip ":7890"))
+(setq w3m-command-arguments-alist
+      '(
+	;; Use the proxy server to visit any foreign urls.
+	("-o" hostip)))
+;;==============================w3m end===================================
+
 ;;========================================keyfreq configuration============================================
 ;; (require 'keyfreq)
 ;; (keyfreq-mode 0)
@@ -398,43 +430,6 @@
 ;;         evil-forward-char
 ;;         evil-backward-char))
 ;;========================================keyfreq configuration end========================================
-
-;;========================================qt-config==========================================================
-;; (require-package 'qt-pro-mode)
-;; (with-eval-after-load 'cc-mode
-;;   (setq qt-base-directory "/mnt/d/Qt/QT5.12.0/5.12.0/")
-;;   (setq qt-source-directory (expand-file-name "Src"
-;;                                               qt-base-directory)
-;;         qt-include-directory (expand-file-name "mingw73_64/include/"
-;;                                                qt-base-directory))
-;;   (add-to-list 'auto-mode-alist (cons qt-source-directory 'c++-mode))
-;;   (add-to-list 'cc-search-directories qt-source-directory)
-
-;;   (add-to-list 'auto-mode-alist (cons qt-include-directory 'c++-mode))
-;;   (dolist (file (directory-files qt-include-directory))
-;;     (let ((path (expand-file-name file qt-include-directory)))
-;;       (when (and (file-directory-p path)
-;;                  (not (or (equal file ".") (equal file ".."))))
-;;         (progn
-;;           (add-to-list 'cc-search-directories path)))))
-;; )
-;; (setenv "GTAGSLIBPATH" (concat "/usr/include"
-;;                                ":"
-;;                                "/usr/src/linux/include"
-;;                                ":"
-;;                                (file-truename "/mnt/d/Qt/QT5.12.0/5.12.0/mingw73_64/include")
-;;                                ":"
-;;                                (file-truename "/mnt/d/Qt/QT5.12.0/5.12.0/mingw73_64/include/Qwt")
-;;                                ":"
-;;                                (file-truename "/mnt/d/opencv/opencvbulid3.40/include")
-;;                                ":"
-;;                                (file-truename "/mnt/d/programs/ImageRecongnition/prj/Applexifu/Applexifu/")
-;;                                ":"
-;;                                (file-truename "/mnt/d/programs/ImageRecongnition/prj/sdk/MVS/Development/Includes")))
-;; (setenv "MAKEOBJDIRPREFIX" (file-truename "~/obj/"))
-;; (setq company-backends '((company-dabbrev-code company-gtags)))
-;;==========================================================================================================
-
 
 (setq my-term-program "/bin/zsh")
 (exec-path-from-shell-initialize)

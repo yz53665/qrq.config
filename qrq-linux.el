@@ -1,4 +1,4 @@
-(setq qrq/org-basic-directory "~/capture/")
+(setq qrq/org-basic-directory "/mnt/d/myfile/capture/")
 ;;=============================eaf======================================
 ;; most of the features in eaf is only available in win & linux
 (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
@@ -18,6 +18,7 @@
 (defalias 'browse-web #'eaf-open-browser)
 
 ;; proxy, be aware that aira2 proxy only support http proxy.
+(setq hostip (car (split-string (shell-command-to-string "echo $hostip") "\n")))
 (setq eaf-proxy-type "http")
 (setq eaf-proxy-host (car (split-string (shell-command-to-string "echo $hostip") "\n")))
 (setq eaf-proxy-port "7890")
