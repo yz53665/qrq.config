@@ -1,4 +1,4 @@
-(setq qrq/org-basic-directory "/mnt/d/myfile/capture/")
+(setq qrq/org-basic-directory "~/myPrj/capture/")
 ;;=============================eaf======================================
 ;; most of the features in eaf is only available in win & linux
 (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
