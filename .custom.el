@@ -1,5 +1,10 @@
+;;==========================env===========================================
+
+(exec-path-from-shell-copy-env "WORKON_HOME")
+(setq image-types (cons 'svg image-types))
 (add-to-list 'melpa-include-packages 'org-download)
 (add-to-list 'melpa-include-packages 'dap-mode)
+(add-to-list 'melpa-include-packages 'lsp-docker)
 ;;============================org-mode configuration========================
 (setq-default qrq/org-basic-directory "~/org")
 (setq-default org-directory qrq/org-basic-directory)
@@ -147,8 +152,6 @@
   (setq lsp-enable-links nil)
   ;; auto restart lsp
   (setq lsp-restart 'auto-restart)
-  ;;pylsp configuration
-  (setq lsp-completion-enable nil)
   ;; don't watch 3rd party javascript libraries
   (push "[/\\\\][^/\\\\]*\\.\\(json\\|html\\|jade\\)$" lsp-file-watch-ignored)
   ;; don't ping LSP language server too frequently
@@ -248,6 +251,8 @@
 (load-theme 'sanityinc-tomorrow-eighties t)
 
 ;;==============================python configuration=====================================
+(require 'treemacs-extensions)
+;; (add-hook 'python-mode-hook #'lsp)
 (set-fringe-style (quote (nil . nil)))
 (custom-set-faces
  '(dap-ui-pending-breakpoint-face ((t (:underline "dim gray"))))
@@ -256,14 +261,44 @@
 (setq left-fringe-width 12)
 
 (with-eval-after-load 'elpy
-  (let* ((venv-dir "~/miniconda3/envs/mm"))
+  ;;using company configuration
+  (setq lsp-completion-enable nil)
+
+  (let* ((venv-dir "/Users/qiuruiqi/miniforge3/bin/python"))
     (when (and (file-exists-p venv-dir)
                (executable-find pyvenv-virtualenvwrapper-python))
-      (pyvenv-activate venv-dir))))
+      (pyvenv-activate venv-dir)))
+  ;;require "jupyter-client=6.1", higher version will cause async issue.
+  ;;Please see: https://github.com/jupyter/jupyter_console/issues/241
+(setq python-shell-interpreter "jupyter"
+      python-shell-interpreter-args "console --simple-prompt"
+      python-shell-prompt-detect-failure-warning nil)
+(add-to-list 'python-shell-completion-native-disabled-interpreters
+             "jupyter")
+;; (setq python-shell-interpreter "ipython"
+;;     python-shell-interpreter-args "-i --simple-prompt")
 
-(add-hook 'python-mode-hook 'anaconda-mode)
+;; (add-to-list 'python-shell-completion-native-disabled-interpreters
+;;              "ipython")
+  ;; (setq elpy-rpc-virtualenv-path "~/miniconda3/envs/rpc-venv")
+  (elpy-enable)
+)
+
+;; (require-package 'anaconda-mode)
+;; (conda-env-initialize-eshell)
+;; if you want eshell support, include:
+;; (conda-env-initialize-eshell)
+;; if you want auto-activation (see below for details), include:
+;; (conda-env-autoactivate-mode t)
+;; if you want to automatically activate a conda environment on the opening of a file:
+;; (add-hook 'python-mode-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+;;                                           (conda-env-activate-for-buffer))))
+;; (require 'anaconda-mode)
+;; (add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'elpy-enable)
+(add-hook 'python-mode-hook 'elpy-mode)
 ;; 运行时让每个python的buffer都用单独的shell,避免共享变量,造成冲突
-(add-hook 'elpy-mode-hook (lambda () (elpy-shell-toggle-dedicated-shell 1)))
+;; (add-hook 'elpy-mode-hook (lambda () (elpy-shell-toggle-dedicated-shell 1)))
 
 ;;=============================elpy configuration end===================================
 
@@ -304,6 +339,7 @@
 ;;===========================================key configuration=========================================
 (with-eval-after-load 'evil
   (my-space-leader-def
+    "hl" 'highlight-symbol
   ;;{{ my org mode setup
     "db" 'dap-hydra
     "oa" 'org-agenda
@@ -339,6 +375,49 @@
 (defhydra hydra-eaf ()
   "
 ")
-(exec-path-from-shell-initialize)
 
-;; (provide '.custom)
+;;==============================hydra end======================================
+
+;;==============================java start====================================
+(require-package 'lsp-java)
+(require 'lsp-java)
+(add-hook 'java-mode-hook #'lsp)
+;;==============================java end======================================
+
+;;==============================scala start====================================
+(require-package 'lsp-metals)
+(require 'lsp-metals)
+(setq lsp-metals-server-args '(;; Metals claims to support range formatting by default but it supports range
+                            ;; formatting of multiline strings only. You might want to disable it so that
+                            ;; emacs can use indentation provided by scala-mode.
+                            "-J-Dmetals.allow-multiline-string-formatting=off"
+                            ;; Enable unicode icons. But be warned that emacs might not render unicode
+                            ;; correctly in all cases.
+                            "-J-Dmetals.icons=unicode"))
+;; In case you want semantic highlighting. This also has to be enabled in lsp-mode using
+  ;; `lsp-semantic-tokens-enable' variable. Also you might want to disable highlighting of modifiers
+  ;; setting `lsp-semantic-tokens-apply-modifiers' to `nil' because metals sends `abstract' modifier
+  ;; which is mapped to `keyword' face.
+  ;; (lsp-metals-enable-semantic-highlighting t)
+(add-hook 'scala-mode-hook #'lsp)
+;;==============================scala end======================================
+
+;;=============================tramp start====================================
+(defconst my-tramp-prompt-regexp
+  (concat (regexp-opt '("c3-pt-relay03.bj:qiuruiqi>") t)
+          "\\s-*")
+  "Regular expression matching my login prompt question.")
+
+(defun my-tramp-action (proc vec)
+  "Enter \"19000101\" in order to give a correct answer."
+  (save-window-excursion
+    (with-current-buffer (tramp-get-connection-buffer vec)
+      (tramp-message vec 6 "\n%s" (buffer-string))
+      (tramp-send-string vec "tj5-ai-train-g8a800-05.kscn"))))
+
+(add-to-list 'tramp-actions-before-shell
+             '((my-tramp-prompt-regexp tramp-action-password)))
+(setq tramp-use-ssh-controlmaster-options nil)
+;;=============================tramp end====================================
+
+(defvar my-term-shell "/bin/bash")
